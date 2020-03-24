@@ -121,6 +121,14 @@ ggplot(faithful) +
 Hint 1: transparency is controlled with `alpha`, and shape with `shape`
 Hint 2: rememberthe difference between mapping and setting aesthetics
 
+```{r}
+ggplot(faithful) + 
+  geom_point(aes(x = eruptions, y = waiting),
+             alpha = 0.2, # 1 completely opaque, 0 completely transparent
+             shape = "square",
+             size = 5)
+```
+
 * * *
 
 Colour the two distributions in the histogram with different colours
@@ -132,6 +140,13 @@ ggplot(faithful) +
 
 Hint 1: For polygons you can map two different colour-like aesthetics: `colour` 
 (the colour of the stroke) and `fill` (the fill colour)
+
+```{r}
+ggplot(faithful) + 
+  geom_histogram(aes(x = eruptions,
+                     fill = eruptions > 3.1))
+```
+
 
 * * *
 
@@ -146,6 +161,21 @@ ggplot(faithful) +
 Change the plot above by setting `position = 'dodge'` in `geom_histogram()` 
 (while keeping the colouring by `waiting`). What do `position` control? 
 
+```{r}
+ggplot(faithful) + 
+  geom_histogram(aes(x = eruptions,
+                     fill = waiting < 60))
+```
+
+```{r}
+ggplot(faithful) + 
+  geom_histogram(aes(x = eruptions,
+                     fill = waiting < 60),
+                 position = "identity",
+                 alpha = 0.2)
+```
+
+
 * * *
 
 Add a line that separates the two point distributions. See `?geom_abline` for 
@@ -155,6 +185,16 @@ how to draw straight lines from a slope and intercept.
 ggplot(faithful) + 
   geom_point(aes(x = eruptions, y = waiting))
 ```
+
+
+```{r}
+ggplot(faithful) + 
+  geom_point(aes(x = eruptions, y = waiting)) +
+  geom_abline(slope = -10,
+              intercept = 100)
+```
+
+
 
 ### Stat
 We will use the `mpg` dataset giving information about fuel economy on different 
@@ -223,6 +263,16 @@ ggplot(mpg) +
   geom_bar(aes(x = class))
 ```
 
+```{r}
+ggplot(mpg) + 
+  stat_count(aes(x = class))
+```
+
+```{r}
+ggplot(mpg) + 
+  stat_count(aes(x = class), geom = "point")
+```
+
 * * *
 
 Use `stat_summary()` to add a red dot at the mean `hwy` for each group
@@ -233,6 +283,12 @@ ggplot(mpg) +
 ```
 
 Hint: You will need to change the default geom of `stat_summary()`
+
+```{r}
+ggplot(mpg) + 
+  geom_jitter(aes(x = class, y = hwy), width = 0.2) +
+  stat_summary(aes(x = class, y = hwy), geom = "point", fun = mean, colour = "red", size = 3)
+```
 
 ### Scales
 Scales define how the mapping you specify inside `aes()` should happen. All 
@@ -271,6 +327,12 @@ ggplot(mpg) +
   scale_colour_brewer(type = 'qual')
 ```
 
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, colour = class)) + 
+  scale_colour_brewer(palette = 'Set2')
+```
+
 * * *
 
 Modify the code below to create a bubble chart (scatterplot with size mapped to
@@ -279,9 +341,8 @@ amount of cylinders (4, 5, 6, and 8) are present in the legend.
 
 ```{r}
 ggplot(mpg) + 
-  geom_point(aes(x = displ, y = hwy, colour = class, size = cyl)) + 
-  scale_colour_brewer(type = 'qual') + 
-  scale_size_area(breaks = c(4, 5, 6, 8))
+  geom_point(aes(x = displ, y = hwy, colour = class)) + 
+  scale_colour_brewer(type = 'qual')
 ```
 
 Hint: The `breaks` argument in the scale is used to control which values are
@@ -290,6 +351,23 @@ present in the legend.
 Explore the different types of size scales available in ggplot2. Is the default
 the most appropriate here?
 
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, colour = class, size = cyl)) + 
+  scale_colour_brewer(type = 'qual') + 
+  scale_size_area(breaks = c(4, 5, 6, 8), max_size = 10) # will use area to scale but ensure that 0 plots to 0 size much more natural progression of sizes, max_size will give more spread in sizes
+```
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, colour = class, size = cyl)) + 
+  scale_colour_brewer(type = 'qual') + 
+  scale_size(breaks = c(4, 5, 6, 8))
+#scale_radius you can map it but it cheats the eye
+```
+
+
+`scale_colour_viridis_d()` other type of scale color
 * * *
 
 Modify the code below so that colour is no longer mapped to the discrete `class`
@@ -298,6 +376,17 @@ variable, but to the continuous `cty` variable. What happens to the guide?
 ```{r}
 ggplot(mpg) + 
   geom_point(aes(x = displ, y = hwy, colour = class, size = cty))
+```
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, colour = cty, size = cty)) # continous color mapping
+```
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy, colour = cty, size = cty))+
+  guides(colour = 'legend') #ggplot compresses legend to one, it only merges guides if they are exactly the same
 ```
 
 * * *
@@ -342,6 +431,24 @@ ggplot(mpg) +
   facet_wrap(~ drv)
 ```
 
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(~ drv, scales = "free") #each plot have their own axis
+```
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(~ drv, scales = "free_y") 
+```
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap(~ drv, scales = "free_x") #each plot have their own axis
+```
+
 * * *
 
 Usually the space occupied by each panel is equal. This can create problems when
@@ -351,11 +458,23 @@ between the panels in the plot. What happens?
 ```{r}
 ggplot(mpg) + 
   geom_bar(aes(y = manufacturer)) + 
-  facet_grid(class ~ .)
+  facet_grid(class ~ .) #space wasting for no data
 ```
 
 Use the `space` argument in `facet_grid()` to change the plot above so each bar 
 has the same width again.
+
+```{r}
+ggplot(mpg) + 
+  geom_bar(aes(y = manufacturer)) + 
+  facet_grid(class ~ ., space = "free_y", scales = "free_y")
+```
+
+```{r}
+ggplot(mpg) + 
+  geom_bar(aes(y = manufacturer)) + 
+  facet_grid(class ~ ., scales = "free_y") # each plot occupies the same space
+```
 
 * * *
 
@@ -367,6 +486,13 @@ ggplot(mpg) +
   geom_point(aes(x = displ, y = hwy)) + 
   facet_grid(year ~ drv)
 ```
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = displ, y = hwy)) + 
+  facet_wrap( ~ drv + year) #less efective way to visualize it
+```
+
 
 ### Coordinates
 The coordinate system is the fabric you draw your layers on in the end. The 
@@ -413,6 +539,18 @@ ggplot(mpg) +
   geom_point(aes(x = hwy, y = displ))
 ```
 
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = hwy, y = displ)) +
+  scale_y_continuous(trans = "log") # looks bad because breask are calculated before
+```
+
+```{r}
+ggplot(mpg) + 
+  geom_point(aes(x = hwy, y = displ)) +
+  coord_trans(y = "log") #look better
+```
+
 * * *
 
 Coordinate systems are particularly important in cartography. While we will not 
@@ -437,6 +575,19 @@ Maps are a huge area in data visualisation and simply too big to cover in this
 workshop. If you want to explore further I advice you to explore the 
 [r-spatial wbsite](https://www.r-spatial.org) as well as the website for the
 [sf package](https://r-spatial.github.io/sf)
+
+```{r}
+# Get the borders of all countries
+world <- sf::st_as_sf(maps::map('world', plot = FALSE, fill = TRUE))
+world <- sf::st_wrap_dateline(world, 
+                              options = c("WRAPDATELINE=YES", "DATELINEOFFSET=180"),
+                              quiet = TRUE)
+# Plot code
+ggplot(world) + 
+  geom_sf() + 
+  coord_sf(crs = "+proj=moll")
+```
+
 
 ### Theme
 Theming defines the feel and look of your final visualisation and is something
